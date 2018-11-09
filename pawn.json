@@ -1,0 +1,35 @@
+{
+  "user": "AGraber",
+  "repo": "samp-compat",
+  "entry": "test.pwn",
+  "output": "test/gamemodes/test.amx",
+  "runtime": {
+    "plugins": [
+      "AGraber/samp-compat"
+    ]
+  },
+  "resources": [
+    {
+      "name": "samp-compat-linux.zip",
+      "archive": true,
+      "platform": "linux",
+      "includes": [
+        "includes"
+      ],
+      "plugins": [
+        "plugins/samp-compat.so"
+      ]
+    },
+    {
+      "name": "samp-compat-windows.zip",
+      "archive": true,
+      "platform": "windows",
+      "includes": [
+        "includes"
+      ],
+      "plugins": [
+        "plugins/samp-compat.dll"
+      ]
+    }
+  ]
+}
