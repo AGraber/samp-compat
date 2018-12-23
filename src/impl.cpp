@@ -95,20 +95,16 @@ void CDECL HOOK_ClientJoin(RPCParameters *rpcParams)
 
 	int playerid = pfn__RakNet__GetIndexFromPlayerID(pRakServer, rpcParams->sender);
 
-	logprintf("HOOK_ClientJoin called for playerid %d", playerid);
-
 	int *ver = (int*)rpcParams->input;
-	logprintf("*ver is %d", *ver);
 
 	if (*ver == iCompatVersion)
 	{
-		logprintf("*ver == iCompatVersion succeeded, flagging player as compatibile", *ver);
 
 		PlayerCompat[playerid] = true;
-		logprintf("Client joined with version %d.", *ver);
+
 		unsigned char namelen = rpcParams->input[5];
 		unsigned int *resp = (unsigned int*)(rpcParams->input + 6 + namelen);
-		logprintf("Resp %d.", *resp);
+
 		*resp = *resp ^ *ver ^ iNetVersion;
 		*ver = iNetVersion;
 
