@@ -14,7 +14,7 @@
       "archive": true,
       "platform": "linux",
       "includes": [
-        "includes"
+        ""
       ],
       "plugins": [
         "plugins/samp-compat.so"
