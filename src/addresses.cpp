@@ -48,6 +48,7 @@ DWORD Addresses::FUNC_Logprintf_03DL_R1 = 0x080B1CA0;
 #endif
 
 DWORD Addresses::FUNC_ClientJoin = 0x0;
+DWORD Addresses::FUNC_FinishedDownloading = 0x0;
 
 void Addresses::Initialize()
 {
@@ -56,12 +57,13 @@ void Addresses::Initialize()
 	{
 		case SAMPVersion::VERSION_037_R2:
 		{
-			Addresses::FUNC_ClientJoin = 0x004966A0;
+			FUNC_ClientJoin = 0x004966A0;
 			break;
 		}
 		case SAMPVersion::VERSION_03DL_R1:
 		{
-			Addresses::FUNC_ClientJoin = 0x0049CEA0;
+			FUNC_ClientJoin = 0x0049CEA0;
+			FUNC_FinishedDownloading = 0x00497B10;
 			break;
 		}
 	}
@@ -76,6 +78,7 @@ void Addresses::Initialize()
 		case SAMPVersion::VERSION_03DL_R1:
 		{
 			FUNC_ClientJoin = 0x080BEED0;
+			Addresses::FUNC_FinishedDownloading = 0x080BE660;
 			break;
 		}
 	}

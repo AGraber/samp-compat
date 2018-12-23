@@ -15,6 +15,7 @@ Implementation of hooks and other funcitons
 #include <windows.h>
 #include <psapi.h>
 #else
+#include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
 #endif
@@ -47,8 +48,6 @@ Implementation of hooks and other funcitons
 subhook_t ClientJoin_hook;
 subhook_t amx_Register_hook;
 
-typedef void(CDECL* FUNC_ClientJoin_t)(RPCParameters *rpcParams);
-
 constexpr int RPC_ClientJoin = 25;
 constexpr int RPC_SetPlayerSkin = 153;
 constexpr int RPC_WorldPlayerAdd = 32;
@@ -60,6 +59,9 @@ constexpr int RPC_ModelData = 179;
 
 typedef int (THISCALL *RakNet__GetIndexFromPlayerID_t)(void* ppRakServer, PlayerID playerId);
 RakNet__GetIndexFromPlayerID_t pfn__RakNet__GetIndexFromPlayerID = NULL;
+
+typedef PlayerID(THISCALL *RakNet__GetPlayerIDFromIndex_t)(void* ppRakServer, int index);
+RakNet__GetPlayerIDFromIndex_t pfn__RakNet__GetPlayerIDFromIndex = NULL;
 
 inline bool IsPlayerConnected(int playerid)
 {
@@ -109,13 +111,20 @@ void CDECL HOOK_ClientJoin(RPCParameters *rpcParams)
 		logprintf("Resp %d.", *resp);
 		*resp = *resp ^ *ver ^ iNetVersion;
 		*ver = iNetVersion;
+
+		
+		((RPCFunction)Addresses::FUNC_ClientJoin)(rpcParams);
+
+		if (currentVersion == SAMPVersion::VERSION_03DL_R1)
+		{
+			((RPCFunction)Addresses::FUNC_FinishedDownloading)(rpcParams);
+		}
 	}
 	else
 	{
 		PlayerCompat[playerid] = false;
+		((RPCFunction)Addresses::FUNC_ClientJoin)(rpcParams);
 	}
-
-	((FUNC_ClientJoin_t)Addresses::FUNC_ClientJoin)(rpcParams);
 
 	subhook_install(ClientJoin_hook);
 }
@@ -566,17 +575,18 @@ AMX_NATIVE ORIGINAL_n_SetPlayerVirtualWorld = NULL;
 
 cell AMX_NATIVE_CALL HOOK_n_SetPlayerVirtualWorld(AMX* amx, cell* params)
 {
-	logprintf("HOOK_n_SetPlayerVirtualWorld(%d, %d) called", params[1], params[2]);
-
 	if (!IsPlayerConnected(params[1]))
-		return logprintf("player is not connected, returned 0"), 0;
+		return 0;
 
-	if (!Impl::IsPlayerCompat(params[1]))
-		return logprintf("player is not compat, return original function"), ORIGINAL_n_SetPlayerVirtualWorld(amx, params);
+	ORIGINAL_n_SetPlayerVirtualWorld(amx, params);
 
-	logprintf("player is under compat, use custom raw function");
-	pNetGame->pPlayerPool->dwVirtualWorld[params[1]] = params[2];
-
+	if (Impl::IsPlayerCompat(params[1]))
+	{
+		RPCParameters rpcParams;
+		rpcParams.sender = pfn__RakNet__GetPlayerIDFromIndex(pRakServer, params[1]);
+		rpcParams.numberOfBitsOfData = 0;
+		((RPCFunction)Addresses::FUNC_FinishedDownloading)(&rpcParams);
+	}
 	return 1;
 }
 
@@ -638,6 +648,7 @@ void Impl::InstallPostHooks()
 		case SAMPVersion::VERSION_03DL_R1:
 		{
 			pRakServer_VTBL[RAKNET_RPC_OFFSET] = reinterpret_cast<int>(RakHooks::RPC_03DL);
+			pfn__RakNet__GetPlayerIDFromIndex = (RakNet__GetPlayerIDFromIndex_t)pRakServer_VTBL[RAKNET_GET_PLAYERID_FROM_INDEX_OFFSET];
 			break;
 		}
 	}

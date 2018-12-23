@@ -87,6 +87,7 @@ public:
 
 	static DWORD FUNC_Logprintf_037_R2;
 	static DWORD FUNC_Logprintf_03DL_R1;
+	static DWORD FUNC_FinishedDownloading;
 
 	static DWORD FUNC_ClientJoin;
 };
