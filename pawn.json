@@ -17,7 +17,7 @@
         ""
       ],
       "plugins": [
-        "plugins/samp-compat.so"
+        "samp-compat.so"
       ]
     },
     {
@@ -25,10 +25,10 @@
       "archive": true,
       "platform": "windows",
       "includes": [
-        "includes"
+        ""
       ],
       "plugins": [
-        "plugins/samp-compat.dll"
+        "samp-compat.dll"
       ]
     }
   ]
