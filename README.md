@@ -5,7 +5,7 @@ allowing you to have players from 2 versions playing together without additional
 
 ## Supported versions:
 * 0.3.7-R2 (both R2-1 and R2-2): Supports clients from 0.3.DL
-* 0.3.DL: Supports clients from 0.3.7 (both R1 and R2)
+* 0.3.DL: Supports clients from 0.3.7 (R1, R2 and R3)
 
 ## Installation
 
