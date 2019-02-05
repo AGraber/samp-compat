@@ -68,6 +68,14 @@ inline bool IsPlayerConnected(int playerid)
 	if (playerid < 0 || playerid >= MAX_PLAYERS || !pNetGame->pPlayerPool->bIsPlayerConnected[playerid])
 		return false;
 
+	if (currentVersion == SAMPVersion::VERSION_03DL_R1)
+	{
+		return *(bool*)((char*)(&pNetGame->pPlayerPool->bIsPlayerConnected[playerid]) + 1000);
+	}
+	else
+	{
+		return pNetGame->pPlayerPool->bIsPlayerConnected[playerid];
+	}
 	return true;
 }
 
