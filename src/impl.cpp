@@ -571,19 +571,22 @@ AMX_NATIVE ORIGINAL_n_SetPlayerVirtualWorld = NULL;
 
 cell AMX_NATIVE_CALL HOOK_n_SetPlayerVirtualWorld(AMX* amx, cell* params)
 {
-	if (!IsPlayerConnected(params[1]))
-		return 0;
-
-	ORIGINAL_n_SetPlayerVirtualWorld(amx, params);
-
-	if (Impl::IsPlayerCompat(params[1]))
+	if (IsPlayerConnected(params[1]))
 	{
-		RPCParameters rpcParams;
-		rpcParams.sender = pfn__RakNet__GetPlayerIDFromIndex(pRakServer, params[1]);
-		rpcParams.numberOfBitsOfData = 0;
-		((RPCFunction)Addresses::FUNC_FinishedDownloading)(&rpcParams);
+		if (Impl::IsPlayerCompat(params[1]))
+		{
+			pNetGame->pPlayerPool->dwVirtualWorld[params[1]] = params[2];
+		}
+		else
+		{
+			ORIGINAL_n_SetPlayerVirtualWorld(amx, params);
+		}
+		return 1;
 	}
-	return 1;
+	else
+	{
+		return 0;
+	}
 }
 
 typedef BYTE(*FUNC_amx_Register)(AMX *amx, AMX_NATIVE_INFO *nativelist, int number);
