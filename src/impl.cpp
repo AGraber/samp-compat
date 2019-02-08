@@ -63,20 +63,12 @@ RakNet__GetIndexFromPlayerID_t pfn__RakNet__GetIndexFromPlayerID = NULL;
 typedef PlayerID(THISCALL *RakNet__GetPlayerIDFromIndex_t)(void* ppRakServer, int index);
 RakNet__GetPlayerIDFromIndex_t pfn__RakNet__GetPlayerIDFromIndex = NULL;
 
+AMX_NATIVE n_IsPlayerConnected = NULL;
+
 inline bool IsPlayerConnected(int playerid)
 {
-	if (playerid < 0 || playerid >= MAX_PLAYERS || !pNetGame->pPlayerPool->bIsPlayerConnected[playerid])
-		return false;
-
-	if (currentVersion == SAMPVersion::VERSION_03DL_R1)
-	{
-		return *(bool*)((char*)(&pNetGame->pPlayerPool->bIsPlayerConnected[playerid]) + 1000);
-	}
-	else
-	{
-		return pNetGame->pPlayerPool->bIsPlayerConnected[playerid];
-	}
-	return true;
+	cell params[2] = { 1, playerid };
+	return n_IsPlayerConnected(NULL, params);
 }
 
 // Y_Less - original YSF
@@ -581,20 +573,17 @@ cell AMX_NATIVE_CALL HOOK_n_SetPlayerVirtualWorld(AMX* amx, cell* params)
 {
 	if (IsPlayerConnected(params[1]))
 	{
-		if (Impl::IsPlayerCompat(params[1]))
+		ORIGINAL_n_SetPlayerVirtualWorld(amx, params);
+
+		if (PlayerCompat[params[1]])
 		{
-			pNetGame->pPlayerPool->dwVirtualWorld[params[1]] = params[2];
+			RPCParameters rpcParams;
+			rpcParams.sender = pfn__RakNet__GetPlayerIDFromIndex(pRakServer, params[1]);
+			rpcParams.numberOfBitsOfData = 0;
+			((RPCFunction)Addresses::FUNC_FinishedDownloading)(&rpcParams);
 		}
-		else
-		{
-			ORIGINAL_n_SetPlayerVirtualWorld(amx, params);
-		}
-		return 1;
 	}
-	else
-	{
-		return 0;
-	}
+	return 1;
 }
 
 typedef BYTE(*FUNC_amx_Register)(AMX *amx, AMX_NATIVE_INFO *nativelist, int number);
@@ -602,19 +591,30 @@ int AMXAPI HOOK_amx_Register(AMX *amx, AMX_NATIVE_INFO *nativelist, int number)
 {
 	// amx_Register hook for redirect natives
 	static bool bSPVW_Hooked = false;
+	static bool bIPC_Get = false;
 
-	if (bSPVW_Hooked)
+	if (!bSPVW_Hooked || !bIPC_Get)
 	{
 		for (int i = 0; nativelist[i].name; i++)
 		{
+			if (bSPVW_Hooked && bIPC_Get) break;
+
 			// If one matches GetGravity
-			if (!strcmp(nativelist[i].name, "SetPlayerVirtualWorld"))
+			if (!bSPVW_Hooked && !strcmp(nativelist[i].name, "SetPlayerVirtualWorld"))
 			{
 				// Hook it
 				bSPVW_Hooked = true;
 				ORIGINAL_n_SetPlayerVirtualWorld = nativelist[i].func;
 				nativelist[i].func = HOOK_n_SetPlayerVirtualWorld;
-				break;
+				continue;
+			}
+
+			if (!bIPC_Get && !strcmp(nativelist[i].name, "IsPlayerConnected"))
+			{
+				// Get address
+				bIPC_Get = true;
+				n_IsPlayerConnected = nativelist[i].func;
+				continue;
 			}
 
 			if (i == number - 1) break;

@@ -4,14 +4,14 @@
 Contains common variables used around the plugin
 */
 
-#include "structs.hpp"
 #include "addresses.hpp"
+
+#define MAX_PLAYERS 1000
 
 extern void** ppPluginData;
 extern void* pAMXFunctions;
 typedef void (*logprintf_t)(const char* szFormat, ...);
 extern logprintf_t logprintf;
-extern CNetGame* pNetGame;
 extern void* pRakServer;
 
 extern bool Initialized;

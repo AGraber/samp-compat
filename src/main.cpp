@@ -20,7 +20,6 @@ The "main" source file with most of the boilerplate code. Includes the
 logprintf_t logprintf;
 
 void** ppPluginData = NULL;
-CNetGame* pNetGame = NULL;
 void* pRakServer = NULL;
 
 bool Initialized = false;
@@ -105,11 +104,6 @@ PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX* amx)
 {
 	if (!PostInitialized)
 	{
-		// Get pNetGame
-		int(*pfn_GetNetGame)(void) = (int(*)(void))ppPluginData[PLUGIN_DATA_NETGAME];
-		pNetGame = (CNetGame*)pfn_GetNetGame();
-
-
 		// Get pRakServer
 		int(*pfn_GetRakServer)(void) = (int(*)(void))ppPluginData[PLUGIN_DATA_RAKSERVER];
 		pRakServer = (void*)pfn_GetRakServer();
