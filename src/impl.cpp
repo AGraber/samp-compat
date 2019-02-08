@@ -63,14 +63,6 @@ RakNet__GetIndexFromPlayerID_t pfn__RakNet__GetIndexFromPlayerID = NULL;
 typedef PlayerID(THISCALL *RakNet__GetPlayerIDFromIndex_t)(void* ppRakServer, int index);
 RakNet__GetPlayerIDFromIndex_t pfn__RakNet__GetPlayerIDFromIndex = NULL;
 
-AMX_NATIVE n_IsPlayerConnected = NULL;
-
-inline bool IsPlayerConnected(int playerid)
-{
-	cell params[2] = { 1, playerid };
-	return n_IsPlayerConnected(NULL, params);
-}
-
 // Y_Less - original YSF
 bool Unlock(void *address, size_t len)
 {
@@ -571,19 +563,16 @@ AMX_NATIVE ORIGINAL_n_SetPlayerVirtualWorld = NULL;
 
 cell AMX_NATIVE_CALL HOOK_n_SetPlayerVirtualWorld(AMX* amx, cell* params)
 {
-	if (IsPlayerConnected(params[1]))
+	cell ret = ORIGINAL_n_SetPlayerVirtualWorld(amx, params);
+	if(ret && PlayerCompat[params[1]])
 	{
-		ORIGINAL_n_SetPlayerVirtualWorld(amx, params);
-
-		if (PlayerCompat[params[1]])
-		{
-			RPCParameters rpcParams;
-			rpcParams.sender = pfn__RakNet__GetPlayerIDFromIndex(pRakServer, params[1]);
-			rpcParams.numberOfBitsOfData = 0;
-			((RPCFunction)Addresses::FUNC_FinishedDownloading)(&rpcParams);
-		}
+		RPCParameters rpcParams;
+		rpcParams.sender = pfn__RakNet__GetPlayerIDFromIndex(pRakServer, params[1]);
+		rpcParams.numberOfBitsOfData = 8;
+		rpcParams.input = reinterpret_cast<unsigned char*>(0x01);
+		((RPCFunction)Addresses::FUNC_FinishedDownloading)(&rpcParams);
 	}
-	return 1;
+	return ret;
 }
 
 typedef BYTE(*FUNC_amx_Register)(AMX *amx, AMX_NATIVE_INFO *nativelist, int number);
@@ -591,30 +580,18 @@ int AMXAPI HOOK_amx_Register(AMX *amx, AMX_NATIVE_INFO *nativelist, int number)
 {
 	// amx_Register hook for redirect natives
 	static bool bSPVW_Hooked = false;
-	static bool bIPC_Get = false;
 
-	if (!bSPVW_Hooked || !bIPC_Get)
+	if (!bSPVW_Hooked)
 	{
 		for (int i = 0; nativelist[i].name; i++)
 		{
-			if (bSPVW_Hooked && bIPC_Get) break;
-
-			// If one matches GetGravity
-			if (!bSPVW_Hooked && !strcmp(nativelist[i].name, "SetPlayerVirtualWorld"))
+			if (!strcmp(nativelist[i].name, "SetPlayerVirtualWorld"))
 			{
 				// Hook it
 				bSPVW_Hooked = true;
 				ORIGINAL_n_SetPlayerVirtualWorld = nativelist[i].func;
 				nativelist[i].func = HOOK_n_SetPlayerVirtualWorld;
-				continue;
-			}
-
-			if (!bIPC_Get && !strcmp(nativelist[i].name, "IsPlayerConnected"))
-			{
-				// Get address
-				bIPC_Get = true;
-				n_IsPlayerConnected = nativelist[i].func;
-				continue;
+				break;
 			}
 
 			if (i == number - 1) break;
@@ -669,14 +646,17 @@ void Impl::UninstallHooks()
 	{
 		SUBHOOK_REMOVE(amx_Register_hook);
 	}
-
-
 }
 
 bool Impl::IsPlayerCompat(int playerid)
 {
-	if (!IsPlayerConnected(playerid))
+	if (playerid < 0 || playerid > MAX_PLAYERS)
+	{
+		logprintf("[ERROR] IsPlayerCompat: bad playerid passed (%d)", playerid);
 		return false;
-
-	return PlayerCompat[playerid];
+	}
+	else
+	{
+		return PlayerCompat[playerid];
+	}
 }
