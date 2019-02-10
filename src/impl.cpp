@@ -63,6 +63,8 @@ RakNet__GetIndexFromPlayerID_t pfn__RakNet__GetIndexFromPlayerID = NULL;
 typedef PlayerID(THISCALL *RakNet__GetPlayerIDFromIndex_t)(void* ppRakServer, int index);
 RakNet__GetPlayerIDFromIndex_t pfn__RakNet__GetPlayerIDFromIndex = NULL;
 
+PlayerID senderCache[MAX_PLAYERS];
+
 // Y_Less - original YSF
 bool Unlock(void *address, size_t len)
 {
@@ -106,6 +108,7 @@ void CDECL HOOK_ClientJoin(RPCParameters *rpcParams)
 		if (currentVersion == SAMPVersion::VERSION_03DL_R1)
 		{
 			((RPCFunction)Addresses::FUNC_FinishedDownloading)(rpcParams);
+			senderCache[playerid] = rpcParams->sender;
 		}
 	}
 	else
@@ -567,7 +570,7 @@ cell AMX_NATIVE_CALL HOOK_n_SetPlayerVirtualWorld(AMX* amx, cell* params)
 	if(ret && PlayerCompat[params[1]])
 	{
 		RPCParameters rpcParams;
-		rpcParams.sender = pfn__RakNet__GetPlayerIDFromIndex(pRakServer, params[1]);
+		rpcParams.sender = senderCache[params[1]];
 		rpcParams.numberOfBitsOfData = 8;
 		rpcParams.input = reinterpret_cast<unsigned char*>(0x01);
 		((RPCFunction)Addresses::FUNC_FinishedDownloading)(&rpcParams);
