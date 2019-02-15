@@ -205,6 +205,7 @@ public:
 						Z,
 						Angle,
 						health;
+					bool bInvulnerable;
 
 					bs.Read(wActorID);
 					bs.Read(SkinID);
@@ -213,6 +214,7 @@ public:
 					bs.Read(Z);
 					bs.Read(Angle);
 					bs.Read(health);
+					bs.Read(bInvulnerable);
 
 					bs.Reset();
 
@@ -224,6 +226,7 @@ public:
 					bs.Write(Z);
 					bs.Write(Angle);
 					bs.Write(health);
+					bs.Write(bInvulnerable);
 
 					return pfn__RakNet__RPC(ppRakServer, uniqueID, &bs, priority, reliability, orderingChannel, playerId, broadcast, shiftTimestamp);
 				}
