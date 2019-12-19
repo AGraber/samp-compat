@@ -3,9 +3,15 @@
 Allow connections from previously incompatible SA-MP clients into newer or older servers
 allowing you to have players from 2 versions playing together without additional software
 
+## How is it done?
+Reverse engineering of the SA-MP server executable was done to get the addresses from
+functions that process relevant packets are hooked with [subhook](https://github.com/Zeex/subhook)
+during the plugin's initialization, and packets from older clients are modified to
+match the structure of the target server version.
+
 ## Supported versions:
 * 0.3.7-R2 (both R2-1 and R2-2): Supports clients from 0.3.DL
-* 0.3.DL: Supports clients from 0.3.7 (R1, R2 and R3)
+* 0.3.DL: Supports clients from 0.3.7 (R1, R2, R3 and R4)
 
 ## Installation
 
