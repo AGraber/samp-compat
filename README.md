@@ -5,7 +5,7 @@ allowing you to have players from 2 versions playing together without additional
 
 ## How is it done?
 Reverse engineering of the SA-MP server executable was done to get the addresses from
-functions that process relevant packets are hooked with [subhook](https://github.com/Zeex/subhook)
+functions that process relevant packets, which are then hooked with [subhook](https://github.com/Zeex/subhook)
 during the plugin's initialization, and packets from older clients are modified to
 match the structure of the target server version.
 
