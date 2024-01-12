@@ -168,6 +168,7 @@ public:
 						facing_angle;
 					uint32_t player_color;
 					uint8_t fighting_style;
+					uint16_t skill_level[11];
 
 					bs.Read(wPlayerID);
 					bs.Read(team);
@@ -178,6 +179,7 @@ public:
 					bs.Read(facing_angle);
 					bs.Read(player_color);
 					bs.Read(fighting_style);
+					bs.Read(skill_level);
 
 					bs.Reset();
 
@@ -191,6 +193,7 @@ public:
 					bs.Write(facing_angle);
 					bs.Write(player_color);
 					bs.Write(fighting_style);
+					bs.Write(skill_level);
 
 					return pfn__RakNet__RPC(ppRakServer, uniqueID, &bs, priority, reliability, orderingChannel, playerId, broadcast, shiftTimestamp);
 				}
@@ -386,6 +389,7 @@ public:
 						facing_angle;
 					uint32_t player_color;
 					uint8_t fighting_style;
+					uint16_t skill_level[11];
 
 					bs.Read(wPlayerID);
 					bs.Read(team);
@@ -397,6 +401,7 @@ public:
 					bs.Read(facing_angle);
 					bs.Read(player_color);
 					bs.Read(fighting_style);
+					bs.Read(skill_level);
 
 					bs.Reset();
 
@@ -409,6 +414,7 @@ public:
 					bs.Write(facing_angle);
 					bs.Write(player_color);
 					bs.Write(fighting_style);
+					bs.Write(skill_level);
 
 					return pfn__RakNet__RPC(ppRakServer, uniqueID, &bs, priority, reliability, orderingChannel, playerId, broadcast, shiftTimestamp);
 				}
